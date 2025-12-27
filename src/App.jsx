@@ -16,6 +16,7 @@ function App() {
   const [forecast, setForecast] = useState([]);
   const [airQuality, setAirQuality] = useState(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [prayerTimes, setPrayerTimes] = useState(null);
   const audioRef = useRef(null);
   const slides = Array.from({ length: 28 }, (_, i) => `/img/photo_${i + 1}.webp`);
 
@@ -37,13 +38,13 @@ function App() {
     const hours = localDate.getHours();
     const isNight = hours < 6 || hours >= 19;
     return {
-      timeString: localDate.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+      timeString: localDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       text: hours < 5 || hours >= 20 ? "شب خوش" : hours < 12 ? "صبح بخیر" : hours < 17 ? "بعد از ظهر بخیر" : "عصر بخیر",
       isNight
     };
   };
 
-  // 3. AQI Graphics Logic
+  // 3.AQI Graphics Logic
   const getAQIInfo = (aqi) => {
     const levels = {
       1: { label: "پاک", color: "bg-green-500", shadow: "shadow-green-500/50" },
@@ -76,6 +77,12 @@ function App() {
         const airRes = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${data.coord.lat}&lon=${data.coord.lon}&appid=${API_KEY}`);
         const airData = await airRes.json();
         setAirQuality(airData.list[0].main.aqi);
+        // Fetch Prayer Times
+        const pRes = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${data.name}&country=&method=8`);
+          const pData = await pRes.json();
+            if (pData.code === 200) {
+              setPrayerTimes(pData.data.timings);
+                }
         // Fetch Forecast
         const fRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${API_KEY}&lang=fa`);
         const fData = await fRes.json();
@@ -136,64 +143,82 @@ function App() {
           </div>
         </div>
 
-        {/* PANEL 2: Main Weather Card */}
-        <div className="bg-white/10 backdrop-blur-2xl border border-white/20 p-6 md:p-10 rounded-[45px] shadow-2xl flex-1 w-full max-w-md relative">
-          
-          {/* Weather Icon (Tailwind Animated) */}
-          {weather && (
-            <div className={`absolute -top-16 -right-8 text-8xl drop-shadow-2xl ${theme.animate}`}>
-              {theme.icon}
-            </div>
-          )}
-          
-          <div className="flex gap-2 mb-8 relative z-30">
-            <input type="text" value={city} dir="auto" onChange={(e) => setCity(e.target.value)} placeholder="جستجوی شهر..." 
-              className="flex-1 bg-black/30 border border-white/10 rounded-2xl px-5 py-3 outline-none text-sm" />
-            <button onClick={handleSearch} className="bg-white text-blue-900 px-6 py-3 rounded-2xl font-black text-sm active:scale-95">GO</button>
+       {/* PANEL 2: Main Weather Card */}
+<div className="bg-white/10 backdrop-blur-2xl border border-white/20 p-6 md:p-10 rounded-[45px] shadow-2xl flex-1 w-full max-w-md relative">
+  
+  {/* Weather Icon */}
+  {weather && (
+    <div className={`absolute -top-16 -right-8 text-8xl drop-shadow-2xl ${theme.animate}`}>
+      {theme.icon}
+    </div>
+  )}
+  
+  {/* Search Box */}
+  <div className="flex gap-2 mb-8 relative z-30">
+    <input type="text" value={city} dir="auto" onChange={(e) => setCity(e.target.value)} placeholder="جستجوی شهر..." 
+      className="flex-1 bg-black/30 border border-white/10 rounded-2xl px-5 py-3 outline-none text-sm" />
+    <button onClick={handleSearch} className="bg-white text-blue-900 px-6 py-3 rounded-2xl font-black text-sm active:scale-95">GO</button>
+  </div>
+
+  {weather ? (
+    <div className="text-center md:text-right">
+      <div className="flex flex-col items-center md:items-end mb-6">
+        <div className="text-xs font-bold uppercase tracking-widest bg-black/20 px-4 py-1 rounded-full mb-1">{timeData.text}</div>
+        <div className="text-6xl font-black tracking-tighter">{timeData.timeString}</div>
+      </div>
+
+      {airQuality && (
+        <div className="flex justify-center md:justify-end mb-6">
+          <div className={`px-4 py-1 rounded-full text-[10px] font-black shadow-lg flex items-center gap-2 ${getAQIInfo(airQuality).color} ${getAQIInfo(airQuality).shadow}`}>
+            <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
+            کیفیت هوا: {getAQIInfo(airQuality).label}
           </div>
-
-          {weather ? (
-            <div className="text-center md:text-right">
-              {/* Local Clock & Greeting */}
-              <div className="flex flex-col items-center md:items-end mb-6">
-                <div className="text-xs font-bold uppercase tracking-widest bg-black/20 px-4 py-1 rounded-full mb-1">{timeData.text}</div>
-                <div className="text-6xl font-black tracking-tighter">{timeData.timeString}</div>
-              </div>
-
-              {/* 3. Graphical AQI (Life Index) */}
-              {airQuality && (
-                <div className="flex justify-center md:justify-end mb-6">
-                  <div className={`px-4 py-1 rounded-full text-[10px] font-black shadow-lg flex items-center gap-2 ${getAQIInfo(airQuality).color} ${getAQIInfo(airQuality).shadow}`}>
-                    <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
-                    کیفیت هوا: {getAQIInfo(airQuality).label}
-                  </div>
-                </div>
-              )}
-
-              <h2 className="text-3xl font-bold opacity-90">{weather.name}</h2>
-              <div className="text-8xl font-black my-2">{Math.round(weather.main.temp)}°</div>
-              
-              {/* 2. Sunrise & Sunset Times */}
-              <div className="flex justify-center md:justify-end gap-4 text-[11px] opacity-60 mb-6">
-                <div className="flex items-center gap-1">☀️ {new Date(weather.sys.sunrise * 1000).toLocaleTimeString('fa-IR', {hour:'2-digit', minute:'2-digit'})}</div>
-                <div className="flex items-center gap-1">🌙 {new Date(weather.sys.sunset * 1000).toLocaleTimeString('fa-IR', {hour:'2-digit', minute:'2-digit'})}</div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-black/20 p-4 rounded-3xl border border-white/5">
-                  <p className="text-[10px] opacity-40 uppercase">رطوبت</p>
-                  <p className="text-xl font-bold">{weather.main.humidity}%</p>
-                </div>
-                <div className="bg-black/20 p-4 rounded-3xl border border-white/5">
-                  <p className="text-[10px] opacity-40 uppercase">سرعت باد</p>
-                  <p className="text-xl font-bold">{weather.wind.speed} m/s</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="py-24 text-center opacity-10 font-black text-3xl uppercase tracking-[10px]">Weather</div>
-          )}
         </div>
+      )}
+
+      <h2 className="text-3xl font-bold opacity-90">{weather.name}</h2>
+      <div className="text-8xl font-black my-2">{Math.round(weather.main.temp)}°</div>
+      
+      <div className="flex justify-center md:justify-end gap-4 text-[11px] opacity-60 mb-6">
+        <div className="flex items-center gap-1">☀️ {new Date(weather.sys.sunrise * 1000).toLocaleTimeString('fa-IR', {hour:'2-digit', minute:'2-digit'})}</div>
+        <div className="flex items-center gap-1">🌙 {new Date(weather.sys.sunset * 1000).toLocaleTimeString('fa-IR', {hour:'2-digit', minute:'2-digit'})}</div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-black/20 p-4 rounded-3xl border border-white/5">
+          <p className="text-[10px] opacity-40 uppercase">رطوبت</p>
+          <p className="text-xl font-bold">{weather.main.humidity}%</p>
+        </div>
+        <div className="bg-black/20 p-4 rounded-3xl border border-white/5">
+          <p className="text-[10px] opacity-40 uppercase">سرعت باد</p>
+          <p className="text-xl font-bold">{weather.wind.speed} m/s</p>
+        </div>
+      </div>
+
+      {/* --- اضافه شده: بخش اوقات شرعی --- */}
+      {prayerTimes && (
+        <div className="mt-5 pt-5 border-t border-white/10 grid grid-cols-3 gap-2">
+          <div className="bg-white/5 p-2 rounded-xl">
+            <p className="text-[8px] opacity-50 uppercase">اذان صبح</p>
+            <p className="text-[12px] font-bold">{prayerTimes.Fajr}</p>
+          </div>
+          <div className="bg-white/5 p-2 rounded-xl">
+            <p className="text-[8px] opacity-50 uppercase">اذان ظهر</p>
+            <p className="text-[12px] font-bold">{prayerTimes.Dhuhr}</p>
+          </div>
+          <div className="bg-white/5 p-2 rounded-xl">
+            <p className="text-[8px] opacity-50 uppercase">اذان مغرب</p>
+            <p className="text-[12px] font-bold">{prayerTimes.Maghrib}</p>
+          </div>
+        </div>
+      )}
+     
+
+    </div>
+  ) : (
+    <div className="py-24 text-center opacity-10 font-black text-3xl uppercase tracking-[10px]">Weather</div>
+  )}
+</div> 
 
         {/* PANEL 3: 5-Day Forecast */}
         {weather && forecast.length > 0 && (
