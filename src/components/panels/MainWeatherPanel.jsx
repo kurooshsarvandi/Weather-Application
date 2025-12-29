@@ -30,7 +30,7 @@ const MainWeatherPanel = ({
             <div className="text-xs font-bold uppercase tracking-widest bg-black/20 px-4 py-1 rounded-full mb-1">
               {timeData.text}
             </div>
-            <div className="text-6xl font-black tracking-tighter">
+            <div className="text-5xl font-black tracking-tighter">
               {timeData.timeString}
             </div>
           </div>
@@ -39,7 +39,7 @@ const MainWeatherPanel = ({
           <AirQuality airQuality={airQuality} />
 
           <h2 className="text-3xl font-bold opacity-90">{weather.name}</h2>
-          <div className="text-8xl font-black my-2">
+          <div className="text-5xl font-black my-2">
             {Math.round(weather.main.temp)}°
           </div>
           

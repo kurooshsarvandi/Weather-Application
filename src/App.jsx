@@ -8,6 +8,7 @@ import MainWeatherPanel from './components/panels/MainWeatherPanel';
 import ForecastPanel from './components/panels/ForecastPanel';
 import Background from './components/common/Background';
 import { getAllWeatherData, getPrayerTimes } from './api';
+import CustomFooter from './components/CustomFooter/CustomFooter';
 
 function App() {
   const [city, setCity] = useState("");
@@ -61,27 +62,32 @@ function App() {
   const theme = getWeatherTheme(weather, timeData, weatherConfig);
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 lg:p-8 overflow-hidden font-sans text-white">
-      <Background weather={weather} theme={theme} />
+    <div className="min-h-screen flex flex-col">
+      {/* بخش ۱: محتوای اصلی */}
+      <div className="flex-1 relative flex items-center justify-center p-4 lg:p-8 overflow-hidden font-sans text-white">
+        <Background weather={weather} theme={theme} />
 
-      <div className="z-10 flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-6 w-full max-w-7xl">
-        <DatePanel />
-        
-        {/* پاس دادن state isLoading به کامپوننت جستجو */}
-        <MainWeatherPanel
-          city={city}
-          setCity={setCity}
-          weather={weather}
-          theme={theme}
-          timeData={timeData}
-          airQuality={airQuality}
-          prayerTimes={prayerTimes}
-          onSearch={handleSearch}
-          isLoading={isLoading} // ✅ اضافه شد
-        />
-        
-        {weather && <ForecastPanel forecast={forecast} />}
+        <div className="z-10 flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-6 w-full max-w-7xl">
+          <DatePanel />
+          
+          <MainWeatherPanel
+            city={city}
+            setCity={setCity}
+            weather={weather}
+            theme={theme}
+            timeData={timeData}
+            airQuality={airQuality}
+            prayerTimes={prayerTimes}
+            onSearch={handleSearch}
+            isLoading={isLoading}
+          />
+          
+          {weather && <ForecastPanel forecast={forecast} />}
+        </div>
       </div>
+      
+      
+      <CustomFooter />
     </div>
   );
 }

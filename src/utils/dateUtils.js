@@ -51,7 +51,8 @@ export const getLocalTimeData = (timezoneOffset) => {
   return {
     timeString: localDate.toLocaleTimeString('en-US', { 
       hour: '2-digit', 
-      minute: '2-digit' 
+      minute: '2-digit',
+      hour12: false
     }),
     text: hours < 5 || hours >= 20 ? "شب خوش" : 
           hours < 12 ? "صبح بخیر" : 
