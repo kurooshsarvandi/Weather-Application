@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 const Background = ({ weather, theme }) => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const slides = Array.from({ length: 28 }, (_, i) => `/img/photo_${i + 1}.webp`);
+  const slides = Array.from({ length: 27 }, (_, i) => `/img/photo_${i + 1}.webp`);
 
   useEffect(() => {
     if (!weather) {
