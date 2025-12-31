@@ -44,7 +44,7 @@ export const apiClient = async (endpoint, options = {}) => {
   // Default configuration applied to all requests
   const defaultOptions = {
     headers: {
-      'Content-Type': 'application/json',  // Always expect JSON responses
+        // Always expect JSON responses
       ...options.headers,                   // Merge custom headers if provided
     },
   };
