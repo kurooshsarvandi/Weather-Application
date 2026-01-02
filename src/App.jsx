@@ -137,8 +137,9 @@ function App() {
   const timeData = weather ? getLocalTimeData(weather.timezone) : null;
   
   // Determine UI theme (colors, icons) based on weather and time of day
-  const theme = getWeatherTheme(weather, timeData, weatherConfig);
-
+  const theme = weather 
+  ? getWeatherTheme(weather, timeData, weatherConfig) 
+  : { colors: {}, icons: {} };
   // ==========================================================================
   // COMPONENT RENDER: UI Structure
   // ==========================================================================
